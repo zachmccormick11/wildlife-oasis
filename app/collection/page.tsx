@@ -3,32 +3,32 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-export default function CollectionPage() {
-  const [images, setImages] = useState<string[]>([]);
+type Observation = {
+  id: string;
+  image_url: string;
+  habitat_type: string;
+  species_name: string | null;
+};
 
-  async function loadImages() {
-    const { data, error } = await supabase.storage
-      .from("wildlife-images")
-      .list();
+export default function CollectionPage() {
+  const [observations, setObservations] = useState<Observation[]>([]);
+
+  async function loadObservations() {
+    const { data, error } = await supabase
+      .from("observations")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    const urls = data.map((item) => {
-      const { data } = supabase.storage
-        .from("wildlife-images")
-        .getPublicUrl(item.name);
-
-      return data.publicUrl;
-    });
-
-    setImages(urls);
+    setObservations(data || []);
   }
 
   useEffect(() => {
-    loadImages();
+    loadObservations();
   }, []);
 
   return (
@@ -37,26 +37,28 @@ export default function CollectionPage() {
         Wildlife Collection
       </h1>
 
-      {images.length === 0 ? (
-        <p className="text-emerald-200">
-          No wildlife uploaded yet.
-        </p>
+      {observations.length === 0 ? (
+        <p>No observations yet.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {images.map((url) => (
+          {observations.map((observation) => (
             <div
-              key={url}
+              key={observation.id}
               className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md"
             >
               <img
-                src={url}
+                src={observation.image_url}
                 alt="Wildlife"
                 className="w-full h-48 object-cover"
               />
 
               <div className="p-4">
-                <p className="text-sm text-emerald-200">
-                  Wildlife Observation
+                <p className="text-sm text-emerald-200 mb-2">
+                  Habitat: {observation.habitat_type}
+                </p>
+
+                <p className="text-xs text-slate-300">
+                  {observation.species_name || "Unknown Species"}
                 </p>
               </div>
             </div>

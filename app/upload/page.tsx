@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [habitatType, setHabitatType] = useState("pond");
   const [images, setImages] = useState<string[]>([]);
 
   async function loadImages() {
@@ -64,7 +65,7 @@ const { error: dbError } = await supabase
     {
       image_url: imageUrl,
       species_name: null,
-      habitat_type: "pond",
+      habitat_type: habitatType,
       user_id: user?.id ?? null,
     },
   ]);
@@ -95,6 +96,17 @@ if (dbError) {
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="mb-6 block"
       />
+
+<select
+  value={habitatType}
+  onChange={(e) => setHabitatType(e.target.value)}
+  className="mb-6 p-3 rounded-lg bg-black/30 border border-white/10"
+>
+  <option value="pond">Pond</option>
+  <option value="aviary">Aviary</option>
+  <option value="fossil">Fossil Cave</option>
+  <option value="terrarium">Terrarium</option>
+</select>
 
       <button
         onClick={handleUpload}
