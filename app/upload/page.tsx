@@ -30,23 +30,55 @@ export default function UploadPage() {
 
   async function handleUpload() {
     if (!file) {
+
+      
+
       alert("Choose an image first.");
       return;
     }
 
     const filePath = `${Date.now()}-${file.name}`;
 
-    const { error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("wildlife-images")
       .upload(filePath, file);
 
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Image uploaded!");
-      setFile(null);
-      loadImages();
+    if (uploadError) {
+      alert(`Upload error: ${uploadError.message}`);
+      return;
     }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("wildlife-images")
+      .getPublicUrl(filePath);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const { error: dbError } = await supabase
+  .from("observations")
+  .insert([
+    {
+      image_url: imageUrl,
+      species_name: null,
+      habitat_type: "pond",
+      user_id: user?.id ?? null,
+    },
+  ]);
+
+if (dbError) {
+  alert(`Database error: ${dbError.message}`);
+  return;
+}
+
+
+    alert("Storage upload succeeded");
+
+    setFile(null);
+    loadImages();
   }
 
   useEffect(() => {
