@@ -5,8 +5,13 @@ import { useEffect, useState } from "react";
 import { habitats } from "../lib/habitats";
 import { supabase } from "../lib/supabase";
 
+type HabitatStats = {
+  observations: number;
+  species: Set<string>;
+};
+
 type Counts = {
-  [key: string]: number;
+  [key: string]: HabitatStats;
 };
 
 export default function HomePage() {
@@ -15,7 +20,7 @@ export default function HomePage() {
   async function loadCounts() {
     const { data, error } = await supabase
       .from("observations")
-      .select("habitat_type");
+      .select("habitat_type, species_name");
 
     if (error) {
       alert(error.message);
@@ -26,11 +31,23 @@ export default function HomePage() {
 
     data.forEach((observation) => {
       const habitat = observation.habitat_type;
-
-      habitatCounts[habitat] =
-        (habitatCounts[habitat] || 0) + 1;
+    
+      if (!habitatCounts[habitat]) {
+        habitatCounts[habitat] = {
+          observations: 0,
+          species: new Set(),
+        };
+      }
+    
+      habitatCounts[habitat].observations += 1;
+    
+      if (observation.species_name) {
+        habitatCounts[habitat].species.add(
+          observation.species_name
+        );
+      }
     });
-
+    
     setCounts(habitatCounts);
   }
 
@@ -64,9 +81,15 @@ export default function HomePage() {
                 Enter habitat
               </p>
 
-              <p className="text-sm text-white/60">
-                {counts[key] || 0} observations
-              </p>
+              <div className="text-sm text-white/60 space-y-1">
+                <p>
+                  {counts[key]?.observations || 0} observations
+                </p>
+
+                <p>
+                  {counts[key]?.species.size || 0} species discovered
+                </p>
+              </div>
             </Link>
           )
         )}

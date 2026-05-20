@@ -10,23 +10,18 @@ export default function UploadPage() {
   const [images, setImages] = useState<string[]>([]);
 
   async function loadImages() {
-    const { data, error } = await supabase.storage
-      .from("wildlife-images")
-      .list();
-
+    const { data, error } = await supabase
+      .from("observations")
+      .select("image_url")
+      .order("created_at", { ascending: false });
+  
     if (error) {
       alert(error.message);
       return;
     }
-
-    const urls = data.map((item) => {
-      const { data } = supabase.storage
-        .from("wildlife-images")
-        .getPublicUrl(item.name);
-
-      return data.publicUrl;
-    });
-
+  
+    const urls = data.map((item) => item.image_url);
+  
     setImages(urls);
   }
 
