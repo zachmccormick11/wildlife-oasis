@@ -9,16 +9,18 @@ type Observation = {
 };
 
 type HabitatSceneProps = {
-  habitatType: string;
-  title: string;
-  background: string;
-};
+    habitatType: string;
+    title: string;
+    background: string;
+    movementClass: string;
+  };
 
-export default function HabitatScene({
-  habitatType,
-  title,
-  background,
-}: HabitatSceneProps) {
+  export default function HabitatScene({
+    habitatType,
+    title,
+    background,
+    movementClass,
+  }: HabitatSceneProps) {
   const [observations, setObservations] = useState<Observation[]>([]);
 
   async function loadObservations() {
@@ -53,8 +55,7 @@ export default function HabitatScene({
             key={observation.id}
             src={observation.image_url}
             alt="Wildlife"
-            className="absolute w-32 h-32 object-cover rounded-full border-4 border-white/20 shadow-2xl fish-drift"
-            style={{
+            className={`absolute w-32 h-32 object-cover rounded-full border-4 border-white/20 shadow-2xl ${movementClass}`}            style={{
               top: `${(index % 4) * 120 + 50}px`,
               left: `${(index % 5) * 180 + 50}px`,
             }}
