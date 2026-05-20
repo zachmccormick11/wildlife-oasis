@@ -2,14 +2,16 @@ import HabitatScene from "../../components/HabitatScene";
 import { habitats } from "../../../lib/habitats";
 
 type Props = {
-  params: {
+  params: Promise<{
     habitatType: string;
-  };
+  }>;
 };
 
-export default function HabitatPage({ params }: Props) {
+export default async function HabitatPage({ params }: Props) {
+  const { habitatType } = await params;
+
   const habitat = habitats[
-    params.habitatType as keyof typeof habitats
+    habitatType as keyof typeof habitats
   ];
 
   if (!habitat) {
@@ -24,7 +26,7 @@ export default function HabitatPage({ params }: Props) {
 
   return (
     <HabitatScene
-      habitatType={params.habitatType}
+      habitatType={habitatType}
       title={habitat.title}
       background={habitat.background}
       movementClass={habitat.movementClass}
